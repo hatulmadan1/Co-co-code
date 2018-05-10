@@ -37,25 +37,43 @@ vector<int> color(N);
 vector<int> tops;
 
 bool cycle_exists = false;
+vector<long long> ways(N);
+set<int> allowing;
 
-void dfs_str(int v) {
+long long dfs_str(int v) {
+	if (cycle_exists) {
+		return 0;
+	}
+
+	if (color[v] == 2) {
+		return ways[v];
+	}
+	else if (color[v] == 1) {
+		cycle_exists = true;
+		return 0;
+	}
+
 	color[v] = 1;
-	tops.push_back(v);
-	for (int i = 0; i < str[v].size();i++) {
+
+	long long ans = 0;
+	for (int i = 0; i < str[v].size(); i++) {
 		int u = str[v][i];
-		if (color[u] == 0) {
-			if (useful[u]) dfs_str(u);
-		}
-		else {
-			if (color[u] == 1) cycle_exists = true;
+
+		if (useful[u]) {
+			ans += dfs_str(u);
 		}
 	}
+
 	color[v] = 2;
+	ways[v] = ans + (allowing.find(v) != allowing.end() ? 1 : 0);
+	ways[v] %= (long long)(1e9 + 7);
+
+	return ways[v];
 }
 
-vector<int> allowing; 
+//�����������
 
-vector<long long> ways(N);
+
 
 int main() {
 	freopen("problem3.in", "r", stdin);
@@ -70,7 +88,7 @@ int main() {
 	int h = 0;
 	for (int i = 0; i < k; i++) {
 		cin >> h;
-		allowing.push_back(h);
+		allowing.insert(h);
 	}
 
 	int a, b; char c;
@@ -80,36 +98,18 @@ int main() {
 		rev[b].push_back(a);
 	}
 
-	for (int i = 0; i < allowing.size(); i++) {
-		dfs_rev(allowing[i]);
+	for (set<int>::iterator i = allowing.begin(); i != allowing.end(); i++) {
+		dfs_rev(*i);
 	}
 
-	dfs_str(1);
+	ways[1] = 1;
+	int ff = dfs_str(1);
 
 	if (cycle_exists) {
 		cout << "-1"; return 0;
 	}
 
-	ways[1] = 1;
-
-	for (int t = 0; t < tops.size(); t++) {
-		int v = tops[t];
-		for (int i = 0; i < str[v].size(); i++) {
-			int u = str[v][i];
-
-			ways[u] += ways[v];
-			ways[u] %= (int)(1e9 + 7);
-		}
-	}
-
-	long long ans = 0;
-
-	for (int i = 0; i < allowing.size(); i++) {
-		ans += ways[allowing[i]];
-		ans %= (int)(1e9 + 7);
-	}
-
-	cout << ans;
+	cout << ff;
 
 	return 0;
 }
