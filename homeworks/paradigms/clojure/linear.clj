@@ -14,4 +14,12 @@
 (defn transpose [a] (apply mapv vector a))
 (defn m*m [a, b] (mapv (fn [n] (mapv (fn [m] (scalar n m)) (transpose b))) a))
 
-(transpose [[1 2 3] [4 5 6] [7 8 9]])
+(defn reqq [f]
+  (fn in [a b]
+    (cond
+      (number? a) (f a b)
+      :else (mapv in a b))))
+
+(def s+ (reqq +))
+(def s- (reqq -))
+(def s* (reqq *))
